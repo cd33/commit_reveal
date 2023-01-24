@@ -5,6 +5,7 @@ import useEthersProvider from "../context/useEthersProvider";
 import { Bytes, ethers } from "ethers";
 import CommitReveal from "../../artifacts/contracts/CommitReveal.sol/CommitReveal.json";
 import { Blocks } from "react-loader-spinner";
+import signatures from "../context/signatures.json";
 
 const candidates = ["toto", "tata", "tutu"];
 
@@ -15,7 +16,8 @@ const Home: NextPage = () => {
   const { contractAddress, owner } = useEthersProvider();
 
   const [error, setError] = useState<string>("");
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isWhitelisted, setIsWhitelisted] = useState<boolean>(false);
   const [hashVote, setHashVote] = useState<string>("");
   const [hashSalt, setHashSalt] = useState<string>("");
   const [hash, setHash] = useState<Bytes>();
@@ -37,6 +39,9 @@ const Home: NextPage = () => {
         );
         const step = await contract.step();
         setActualStep(parseInt(step));
+        if (step === 0 && signatures.hasOwnProperty(address)) {
+          setIsWhitelisted(true);
+        }
         if (step === 2) {
           let tempArr: number[] = [];
           for (const can of candidates) {
@@ -99,7 +104,7 @@ const Home: NextPage = () => {
       return;
     }
 
-    if (provider && signer) {
+    if (provider && signer && address) {
       setIsLoading(true);
       const contract = new ethers.Contract(
         contractAddress,
@@ -111,7 +116,7 @@ const Home: NextPage = () => {
         let overrides = {
           from: address,
         };
-        const transaction = await contract.commitVote(hash, overrides);
+        const transaction = await contract.commitVote(hash, signatures[address as keyof typeof signatures], overrides);
         await transaction.wait();
         setIsLoading(false);
       } catch (error: unknown) {
@@ -196,7 +201,7 @@ const Home: NextPage = () => {
 
   return (
     <div className="home">
-      <p style={{ fontSize: "2em" }}>Delphya Homepage</p>
+      <p style={{ fontSize: "2em" }}>Commit-Reveal-ECDSA</p>
       {isLoading ? (
         <Blocks
           visible={true}
@@ -282,14 +287,22 @@ const Home: NextPage = () => {
                     alignItems: "center",
                   }}
                 >
-                  {hash ? (
+                  {isWhitelisted ? (
                     <>
-                      <p style={{ marginTop: "10vh" }}>Now you can vote</p>
-                      <button onClick={() => commitVote(hash)}>VOTE</button>
+                      {hash ? (
+                        <>
+                          <p style={{ marginTop: "10vh" }}>Now you can vote</p>
+                          <button onClick={() => commitVote(hash)}>VOTE</button>
+                        </>
+                      ) : (
+                        <p style={{ fontSize: "2em" }}>
+                          To vote generate your hash
+                        </p>
+                      )}
                     </>
                   ) : (
                     <p style={{ fontSize: "2em" }}>
-                      To vote generate your hash
+                      You&apos;re not whitelisted, you can&apos;t vote
                     </p>
                   )}
                 </div>

@@ -2,10 +2,16 @@
 pragma solidity 0.8.17;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
+import "hardhat/console.sol";
 
 /// @title Commit-Reveal
 /// @author cd33
 contract CommitReveal is Ownable {
+    using ECDSA for bytes32;
+
+    address private signerAddress;
+    
     enum Step {
         Commit,
         Reveal,
@@ -18,7 +24,19 @@ contract CommitReveal is Ownable {
 
     uint256 public revealDeadline = block.timestamp + 86400;
 
-    constructor() {}
+    constructor(address _signerAddress) {
+        signerAddress = _signerAddress;
+    }
+
+    function verifyAddressSigner(bytes memory signature)
+        private
+        view
+        returns (bool)
+    {
+        return
+            signerAddress ==
+            keccak256(abi.encodePacked(msg.sender)).toEthSignedMessageHash().recover(signature);
+    }
 
     function setStep() external onlyOwner {
         if (step == Step.Commit) {
@@ -32,7 +50,11 @@ contract CommitReveal is Ownable {
         }
     }
 
-    function commitVote(bytes32 _secretVote) external {
+    function commitVote(bytes32 _secretVote, bytes calldata signature) external {
+        require(
+            verifyAddressSigner(signature),
+            "Signature Validation Failed"
+        );
         require(step == Step.Commit, "Commit period done");
         voteByUser[msg.sender] = _secretVote;
     }
