@@ -9,7 +9,10 @@ async function main() {
 
   // Sign messages whitelisted users. These signatures will allow to vote.
   for (const address of addresses) {
-    const addressHash = ethers.utils.solidityKeccak256(['address'], [address.address])
+    const addressHash = ethers.utils.solidityKeccak256(
+      ['address'],
+      [address.address],
+    )
     const messageBytes = ethers.utils.arrayify(addressHash)
     signature = await signer.signMessage(messageBytes)
     signedMessages[address.address] = signature

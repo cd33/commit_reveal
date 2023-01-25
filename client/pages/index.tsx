@@ -116,7 +116,11 @@ const Home: NextPage = () => {
         let overrides = {
           from: address,
         };
-        const transaction = await contract.commitVote(hash, signatures[address as keyof typeof signatures], overrides);
+        const transaction = await contract.commitVote(
+          hash,
+          signatures[address as keyof typeof signatures],
+          overrides
+        );
         await transaction.wait();
         setIsLoading(false);
       } catch (error: unknown) {

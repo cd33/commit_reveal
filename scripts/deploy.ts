@@ -2,7 +2,7 @@ import { ethers, network } from "hardhat";
 import { verify } from "../utils/verify";
 
 async function main() {
-  const signerAddress = "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
+  const signerAddress = "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266";
 
   const CommitReveal = await ethers.getContractFactory("CommitReveal");
   const commitReveal = await CommitReveal.deploy(signerAddress);

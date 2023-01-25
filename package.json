@@ -6,9 +6,6 @@
   "author": "cd33",
   "license": "ISC",
   "dependencies": {
-    "hardhat": "^2.11.1"
-  },
-  "devDependencies": {
     "@ethersproject/abi": "^5.4.7",
     "@ethersproject/providers": "^5.4.7",
     "@nomicfoundation/hardhat-chai-matchers": "^1.0.0",
